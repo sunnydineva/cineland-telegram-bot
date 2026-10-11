@@ -6,7 +6,7 @@ Java Telegram бот за автоматично следене на проже�
 
 ## Telegram Preview
 
-![Примерни Telegram съобщения](msgs.png)
+![Примерни Telegram съобщения](src/main/resources/msgs.png)
 
 ## Функционалности
 
