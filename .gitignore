@@ -39,3 +39,6 @@ build/
 .DS_Store
 .env
 /src/.env
+cineland-response-*.json
+cineland-selected-date.txt
+telegram-update-offset.txt

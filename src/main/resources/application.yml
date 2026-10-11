@@ -1,7 +1,13 @@
-spring:
-  config:
-    import: optional:file:.env[.properties]
-
 telegram:
-  bot-token: ${TELEGRAM_BOT_TOKEN}
-  chat-id: ${TELEGRAM_CHAT_ID}
+  bot-username: sunnydinevabot
+
+cineland:
+  base-url: https://restapi.cineland.bg/api
+  resource-type: region
+  resource-id: 665009cb-8494-4d9e-8b1b-2e74020bd985
+  endpoint-path: screening
+  movie-id: null
+
+state:
+  date-file: cineland-selected-date.txt
+  offset-file: telegram-update-offset.txt
