@@ -11,3 +11,9 @@ cineland:
 state:
   date-file: cineland-selected-date.txt
   offset-file: telegram-update-offset.txt
+
+viber:
+  webhook:
+    domain: viber.my-expenses.xyz
+    port: 8080
+    path: /webhook

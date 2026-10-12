@@ -66,6 +66,18 @@ CHECK_INTERVAL_MINUTES=5
 
 `CHECK_INTERVAL_MINUTES` трябва да е цяло число по-голямо от `0`.
 
+Нетайните Viber webhook настройки са в `src/main/resources/application.yml`:
+
+```yaml
+viber:
+  webhook:
+    domain: viber.my-expenses.xyz
+    port: 8080
+    path: /webhook
+```
+
+При нужда могат да се override-нат през `.env` с `VIBER_WEBHOOK_DOMAIN`, `VIBER_WEBHOOK_PORT` и `VIBER_WEBHOOK_PATH`.
+
 ## Стартиране
 
 Бърз вариант от терминал:
@@ -95,6 +107,32 @@ No events available.
 ```
 
 Приложението трябва да остане стартирано. Ако компютърът или Java процесът спре, автоматичните проверки също спират.
+
+## Viber Webhook Подготовка
+
+Приложението стартира HTTP сървър на порт `8080` и приема:
+
+```text
+POST /webhook
+```
+
+Публичният webhook адрес за Viber е:
+
+```text
+https://viber.my-expenses.xyz/webhook
+```
+
+Очакваната production схема е:
+
+```text
+viber.my-expenses.xyz -> HTTPS reverse proxy -> localhost:8080/webhook
+```
+
+Засега endpoint-ът само приема payload-а, логва го в конзолата и връща:
+
+```json
+{"status":"ok"}
+```
 
 ## Cineland API
 
@@ -134,6 +172,7 @@ telegram-update-offset.txt
 - Jackson YAML
 - Java HttpClient
 - Telegram Bot API
+- Java HttpServer
 
 ## Ограничения
 

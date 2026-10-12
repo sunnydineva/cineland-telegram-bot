@@ -5,6 +5,7 @@ import org.sunny.service.CinelandCheckService;
 import org.sunny.service.DateService;
 import org.sunny.service.MonitorScheduler;
 import org.sunny.service.TelegramService;
+import org.sunny.service.ViberWebhookServerService;
 
 import java.net.http.HttpClient;
 import java.time.Duration;
@@ -54,6 +55,8 @@ public class CinelandMonitor {
         } catch (Exception e) {
             System.err.println("Telegram error: " + e.getMessage());
         }
+
+        new ViberWebhookServerService(config).start();
 
         new MonitorScheduler(
                 checkService,

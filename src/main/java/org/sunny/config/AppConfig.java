@@ -23,7 +23,10 @@ public record AppConfig(
         String cinelandResourceType,
         String cinelandResourceId,
         String cinelandEndpointPath,
-        String cinelandMovieId
+        String cinelandMovieId,
+        String viberWebhookDomain,
+        int viberWebhookPort,
+        String viberWebhookPath
 ) {
 
     private static final LocalDate DEFAULT_CHECK_DATE =
@@ -63,7 +66,26 @@ public record AppConfig(
                 yamlText(yaml, "cineland", "resource-type"),
                 yamlText(yaml, "cineland", "resource-id"),
                 yamlText(yaml, "cineland", "endpoint-path"),
-                yamlTextOrDefault(yaml, "cineland", "movie-id", "null")
+                yamlTextOrDefault(yaml, "cineland", "movie-id", "null"),
+                getString(
+                        dotenv,
+                        "VIBER_WEBHOOK_DOMAIN",
+                        yamlText(yaml, "viber", "webhook", "domain")
+                ),
+                Math.toIntExact(
+                        getPositiveLong(
+                                dotenv,
+                                "VIBER_WEBHOOK_PORT",
+                                yamlLong(yaml, "viber", "webhook", "port")
+                        )
+                ),
+                normalizeWebhookPath(
+                        getString(
+                                dotenv,
+                                "VIBER_WEBHOOK_PATH",
+                                yamlText(yaml, "viber", "webhook", "path")
+                        )
+                )
         );
     }
 
@@ -104,6 +126,59 @@ public record AppConfig(
         return value;
     }
 
+    private static String yamlText(
+            JsonNode yaml,
+            String section,
+            String subsection,
+            String key
+    ) {
+        String value = yaml.path(section)
+                .path(subsection)
+                .path(key)
+                .asText("")
+                .trim();
+
+        if (value.isBlank()) {
+            throw new IllegalStateException(
+                    "Missing " + section + "."
+                            + subsection + "."
+                            + key
+                            + " in application.yml"
+            );
+        }
+
+        return value;
+    }
+
+    private static long yamlLong(
+            JsonNode yaml,
+            String section,
+            String subsection,
+            String key
+    ) {
+        JsonNode node = yaml.path(section).path(subsection).path(key);
+
+        if (!node.canConvertToLong()) {
+            throw new IllegalStateException(
+                    "Missing or invalid " + section + "."
+                            + subsection + "."
+                            + key
+                            + " in application.yml"
+            );
+        }
+
+        long value = node.asLong();
+
+        if (value <= 0) {
+            throw new IllegalStateException(
+                    section + "." + subsection + "." + key
+                            + " must be greater than 0"
+            );
+        }
+
+        return value;
+    }
+
     private static String yamlTextOrDefault(
             JsonNode yaml,
             String section,
@@ -127,6 +202,10 @@ public record AppConfig(
     ) {
         String value = dotenv.get(key);
         return isBlank(value) ? defaultValue : value.trim();
+    }
+
+    private static String normalizeWebhookPath(String path) {
+        return path.startsWith("/") ? path : "/" + path;
     }
 
     private static long getPositiveLong(
