@@ -2,6 +2,7 @@ package org.sunny.service;
 
 import org.sunny.config.AppConfig;
 import org.sunny.messages.BotMessages;
+import org.sunny.bot.OutboundBot;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -17,7 +18,7 @@ public class CinelandCheckService {
 
     private final HttpClient httpClient;
     private final DateService dateService;
-    private final TelegramService telegramService;
+    private final OutboundBot bot;
     private final String baseUrl;
     private final String resourceType;
     private final String resourceId;
@@ -28,11 +29,11 @@ public class CinelandCheckService {
             AppConfig config,
             HttpClient httpClient,
             DateService dateService,
-            TelegramService telegramService
+            OutboundBot bot
     ) {
         this.httpClient = httpClient;
         this.dateService = dateService;
-        this.telegramService = telegramService;
+        this.bot = bot;
         this.baseUrl = stripTrailingSlash(config.cinelandBaseUrl());
         this.resourceType = stripSlashes(config.cinelandResourceType());
         this.resourceId = config.cinelandResourceId();
@@ -43,13 +44,9 @@ public class CinelandCheckService {
     public void check() {
         LocalDate date = dateService.getSelectedDate();
 
-        System.out.println(
-                "[" + LocalDateTime.now()
-                        + "] Checking Cineland..."
-        );
+        System.out.println("[" + LocalDateTime.now() + "] Checking Cineland...");
 
-        Path stateFile =
-                Path.of("cineland-response-" + date + ".json");
+        Path stateFile = Path.of("cineland-response-" + date + ".json");
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -59,16 +56,10 @@ public class CinelandCheckService {
                     .GET()
                     .build();
 
-            HttpResponse<String> response = httpClient.send(
-                    request,
-                    HttpResponse.BodyHandlers.ofString()
-            );
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != 200) {
-                System.err.println(
-                        "Cineland HTTP error: "
-                                + response.statusCode()
-                );
+                System.err.println("Cineland HTTP error: " + response.statusCode());
                 return;
             }
 
@@ -82,9 +73,7 @@ public class CinelandCheckService {
                 return;
             }
 
-            String previous = Files.exists(stateFile)
-                    ? Files.readString(stateFile)
-                    : "";
+            String previous = Files.exists(stateFile) ? Files.readString(stateFile) : "";
 
             if (current.equals(previous)) {
                 System.out.println("No changes detected.");
@@ -93,44 +82,30 @@ public class CinelandCheckService {
 
             System.out.println("Changes detected!");
 
-            telegramService.sendNotification(
-                    BotMessages.cinelandChanged(date)
-            );
+            bot.sendNotification(BotMessages.cinelandChanged(date));
 
             Files.writeString(stateFile, current);
 
-            System.out.println(
-                    "Telegram notification sent successfully."
-            );
+            System.out.println("Telegram notification sent successfully.");
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             System.err.println("Monitor interrupted.");
 
         } catch (Exception e) {
-            System.err.println(
-                    "Monitor error: " + e.getMessage()
-            );
+            System.err.println("Monitor error: " + e.getMessage());
         }
     }
 
     private String buildApiUrl(LocalDate date) {
-        return baseUrl
-                + "/"
-                + resourceType
-                + "/"
-                + resourceId
-                + "/"
-                + endpointPath
+        return baseUrl + "/" + resourceType + "/" + resourceId + "/" + endpointPath
                 + "?dateTimeFrom=" + date + "T00:00:00.000"
                 + "&dateTimeTo=" + date.plusDays(1) + "T23:59:59.999"
                 + "&movieId=" + movieId;
     }
 
     private static String stripTrailingSlash(String value) {
-        return value.endsWith("/")
-                ? value.substring(0, value.length() - 1)
-                : value;
+        return value.endsWith("/") ? value.substring(0, value.length() - 1) : value;
     }
 
     private static String stripSlashes(String value) {

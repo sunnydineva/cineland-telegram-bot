@@ -6,7 +6,7 @@ Java Telegram бот за автоматично следене на проже�
 
 ## Telegram Preview
 
-![Примерни Telegram съобщения](src/main/resources/msgs.png)
+![Примерни Telegram съобщения](monitoring-service/src/main/resources/msgs.png)
 
 ## Функционалности
 
@@ -17,7 +17,18 @@ Java Telegram бот за автоматично следене на проже�
 - Запазване на последното състояние за всяка проверявана дата.
 - Сравняване на API отговорите за откриване на промени.
 - Зареждане на чувствителната конфигурация от `.env`.
-- Реализация с Java 17, Maven, Java HttpClient и Telegram Bot API.
+- Реализация с Java 17, Maven multi-module build, Java HttpClient и Telegram Bot API.
+
+## Maven Модули
+
+Проектът е разделен на два Maven модула:
+
+| Модул | Отговорност |
+| --- | --- |
+| `bot-core` | Reusable Telegram bot слой: приема команди чрез `getUpdates`, филтрира позволени чатове/потребители и изпраща съобщения. |
+| `monitoring-service` | Cineland monitoring приложението: конфигурация, проверки към Cineland API, scheduler, command handler и съобщенията за конкретния monitoring use case. |
+
+`monitoring-service` зависи от `bot-core`.
 
 ## Telegram Команди
 
@@ -39,7 +50,7 @@ Java Telegram бот за автоматично следене на проже�
 ## Как Работи
 
 1. Приложението зарежда `.env` чрез `dotenv-java`.
-2. Зарежда нетайните настройки от `src/main/resources/application.yml`.
+2. Зарежда нетайните настройки от `monitoring-service/src/main/resources/application.yml`.
 3. Определя датата за следене от `cineland-selected-date.txt`, ако файлът съществува, иначе от `CHECK_DATE`.
 4. Изпраща HTTP `GET` заявка към Cineland `/screening` API.
 5. Ако API върне грешка, записва я в конзолата и изчаква следващата проверка.
@@ -74,14 +85,14 @@ CHECK_INTERVAL_MINUTES=5
 cd ~/ss/projects/cineland-telegram-bot
 java -version
 mvn -version
-mvn clean compile
-mvn exec:java
+mvn clean install
+mvn -pl monitoring-service -am exec:java
 ```
 
 При следващо стартиране, ако няма промени по кода:
 
 ```bash
-mvn exec:java
+mvn -pl monitoring-service -am exec:java
 ```
 
 Примерни логове:
@@ -128,7 +139,7 @@ telegram-update-offset.txt
 ## Технологии
 
 - Java 17
-- Maven
+- Maven multi-module project
 - dotenv-java
 - Jackson Databind
 - Jackson YAML

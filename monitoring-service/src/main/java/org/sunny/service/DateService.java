@@ -17,14 +17,10 @@ public class DateService {
     public LocalDate loadSelectedDate() {
         try {
             if (Files.exists(dateFile)) {
-                selectedDate = LocalDate.parse(
-                        Files.readString(dateFile).trim()
-                );
+                selectedDate = LocalDate.parse(Files.readString(dateFile).trim());
             }
         } catch (Exception e) {
-            System.err.println(
-                    "Cannot load saved date: " + e.getMessage()
-            );
+            System.err.println("Cannot load saved date: " + e.getMessage());
         }
 
         return selectedDate;

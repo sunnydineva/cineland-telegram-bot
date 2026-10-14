@@ -37,8 +37,9 @@ build/
 
 ### Mac OS ###
 .DS_Store
-.env
+.env-copy
 /src/.env
+/monitoring-service/.env
 cineland-response-*.json
 cineland-selected-date.txt
 telegram-update-offset.txt
