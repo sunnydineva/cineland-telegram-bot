@@ -86,7 +86,8 @@ cd ~/ss/projects/cineland-telegram-bot
 java -version
 mvn -version
 mvn clean install
-mvn -pl monitoring-service -am exec:java
+cd ~/ss/projects/cineland-telegram-bot/monitoring-service
+mvn exec:java
 ```
 
 При следващо стартиране, ако няма промени по кода:
